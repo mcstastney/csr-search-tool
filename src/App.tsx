@@ -40,8 +40,8 @@ function App() {
   }
 
   return (
-    <>
-      <header className="header">
+    <div>
+      <header>
         <h1>Sustainability Search</h1>
         <img
           src="/bot-search-icon.png"
@@ -51,24 +51,15 @@ function App() {
         <p>
           Explore Aviva's Climate and Nature initiatives by location or theme.
         </p>
-        <div>
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={handleInputChange}
-            placeholder="Enter a search term, e.g. 'norwich', 'biodiversity'"
-          />
-          <button onClick={handleSearch}>Search</button>
-        </div>
       </header>
-      <main>
+      <main className="results-wrapper">
         <div>
           {searchAttempted && results.length === 0 && (
             <p>No results found. Please try a different search term.</p>
           )}
 
           {results.map((item) => (
-            <div className="resultsDiv" key={item.id}>
+            <div className="result" key={item.id}>
               <h3>{item.name}</h3>
               <p>
                 <strong>Description:</strong> {item.description}
@@ -83,11 +74,21 @@ function App() {
           ))}
         </div>
 
-        <footer className="w-full mt-auto pt-8 pb-4 text-center border-t border-black-300">
-          <p className="text-xs text-zinc-600">A Green Spark product</p>
-        </footer>
+        <div className="search-area">
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={handleInputChange}
+            placeholder="Enter a search term, e.g. 'norwich', 'biodiversity'"
+          />
+          <button onClick={handleSearch}>Search</button>
+        </div>
       </main>
-    </>
+
+      <footer className="w-full mt-auto pt-8 pb-4 text-center border-t border-black-300">
+        <p className="text-xs text-zinc-600">A team Green Spark product</p>
+      </footer>
+    </div>
   );
 }
 

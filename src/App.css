@@ -1,18 +1,18 @@
 #root {
   text-align: center;
-  background-color: #191D64;
 }
 
- .header{
-    /* padding:0%; */
-    margin: 0;
-    /* width: 100%; */
-    padding-bottom: 20px;
-    background-color: #191D64;
-    display: flex;
-    flex-direction: column;
-  }
+.botIcon {
+  margin: 0 auto;
+  width: 150px;
+  height: 150px;
+}
 
+.results-wrapper {
+  position: relative;
+  height: 100vh;
+  overflow: auto;
+}
 
 input {
   color: black;
@@ -29,6 +29,17 @@ input {
 input::placeholder {
   color: grey; 
   opacity: 1; 
+}
+
+.search-area {
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  z-index: 10;
+  background: #121212;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
 }
 
 button {
@@ -55,7 +66,8 @@ button:focus-visible {
   outline: 2px auto -webkit-focus-ring-color;
 }
 
-.resultsDiv { 
+.result { 
+  flex: 1;
   background-color: rgb(238, 248, 227);
   color: black;
   border: solid 2px #029443; 
@@ -65,29 +77,24 @@ button:focus-visible {
   max-width: 500px; 
   margin: auto;
   margin-bottom: 2rem;
-  text-align: left; }
+  text-align: left; 
+  left: 0;
+  right: 0;
+  overflow-y: auto;
+  max-height: 400px;
+}
 
-  main {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-  }
-
-  footer {
-    position: fixed;
-    height: 35px;
-    margin-top: 20px;
-    left: 0;
-    bottom: 0;
-    width: 100%;
-    background-color: #FFD900;
-    color: black;
-    font-size: 0.8em;
+footer {
+  position: sticky;
+  height: 35px;
+  margin-top: 40px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  background-color: #FFD900;
+  color: black;
+  font-size: 0.8em;
   line-height: 1;
-  }
-
- .botIcon {
-    margin: auto;
-    width: 150px;
-    height: 150px;
- }
+}
