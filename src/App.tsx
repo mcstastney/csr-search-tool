@@ -8,6 +8,7 @@ type Result = {
   location: string;
   themes: string[];
   description: string;
+  source: string;
 };
 
 function App() {
@@ -69,6 +70,12 @@ function App() {
               </p>
               <p>
                 <strong>Location:</strong> {item.location}
+              </p>
+              <p>
+                <strong>Source:</strong>{" "}
+                <a href={item.source} target="_blank" rel="noopener noreferrer">
+                  {item.source}
+                </a>
               </p>
             </div>
           ))}
