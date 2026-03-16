@@ -44,12 +44,10 @@ function App() {
   return (
     <div>
       <header>
+        <div className="masthead">
+          <img src="/aviva-logo.svg" alt="" className="avivaLogo" />
+        </div>
         <h1>Climate and nature search</h1>
-        <img
-          src="/bot-search-icon.png"
-          alt="Sustainability bot"
-          className="botIcon"
-        />
         <p>
           Explore Aviva's Climate and Nature initiatives by location or theme.
         </p>
@@ -62,7 +60,7 @@ function App() {
 
           {results.map((item) => (
             <div className="result" key={item.id}>
-              <h3>{item.name}</h3>
+              <h2>{item.name}</h2>
               <p>
                 <strong>Description:</strong> {item.description}
               </p>
@@ -90,6 +88,9 @@ function App() {
             type="text"
             value={searchTerm}
             onChange={handleInputChange}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleSearch();
+            }}
             placeholder="Enter a search term, e.g. 'norwich', 'biodiversity'"
           />
           <button onClick={handleSearch}>Search</button>
