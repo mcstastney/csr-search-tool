@@ -1,5 +1,42 @@
 #root {
   text-align: center;
+  background-color: #191D64;
+}
+
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  background-color: #191D64;
+  color: rgba(255, 255, 255, 0.87);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  /* -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale; */
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .botIcon {
@@ -37,7 +74,8 @@ input::placeholder {
   left: 0;
   width: 100%;
   z-index: 10;
-  background: #121212;
+  background-color: #191D64;
+
   padding-top: 1rem;
   padding-bottom: 1rem;
 }
@@ -68,9 +106,9 @@ button:focus-visible {
 
 .result { 
   flex: 1;
-  background-color: rgb(238, 248, 227);
+  background-color: #FFFFFF;
   color: black;
-  border: solid 2px #029443; 
+  border: solid 2px #FFFFFF; 
   border-radius: 8px; 
   padding: 1rem;
   width: 100%; 

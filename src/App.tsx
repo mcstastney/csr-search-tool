@@ -9,6 +9,7 @@ type Result = {
   themes: string[];
   description: string;
   source: string;
+  date: string;
 };
 
 function App() {
@@ -43,7 +44,7 @@ function App() {
   return (
     <div>
       <header>
-        <h1>Sustainability Search</h1>
+        <h1>Climate and nature search</h1>
         <img
           src="/bot-search-icon.png"
           alt="Sustainability bot"
@@ -70,6 +71,9 @@ function App() {
               </p>
               <p>
                 <strong>Location:</strong> {item.location}
+              </p>
+              <p>
+                <strong>Date:</strong> {item.date}
               </p>
               <p>
                 <strong>Source:</strong>{" "}
