@@ -1,5 +1,5 @@
 import "./App.css";
-import { useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { data, dataSourceOptions } from "./data";
 
 type Result = {
@@ -16,6 +16,20 @@ type Result = {
 type Question = {
   id: string;
   text: string;
+};
+
+type FormFields = {
+  theme: string;
+  location: string;
+  fromDate: string;
+  toDate: string;
+};
+
+const initialFormFields: FormFields = {
+  theme: "",
+  location: "",
+  fromDate: "",
+  toDate: "",
 };
 
 // Mock questions that would be extracted from an uploaded questionnaire
@@ -48,6 +62,32 @@ function FileUploadSearch() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [selectedQuestions, setSelectedQuestions] = useState<string[]>([]);
   const [questionnaireSubmitted, setQuestionnaireSubmitted] = useState(false);
+  const [formFields, setFormFields] = useState<FormFields>(initialFormFields);
+
+  function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const { name, value } = e.target;
+    setFormFields((currentFields) => ({
+      ...currentFields,
+      [name]: value,
+    }));
+  }
+
+  function matchesWords(value: string, query: string) {
+    const queryWords = query.trim().toLowerCase().split(/\s+/);
+    const normalizedValue = value.toLowerCase();
+    return queryWords.every((word) => normalizedValue.includes(word));
+  }
+
+  function parseDateFilter(dateValue: string) {
+    if (!dateValue) {
+      return null;
+    }
+    const [year, month, day] = dateValue.split("-").map(Number);
+    if (!year || !month || !day) {
+      return null;
+    }
+    return new Date(year, month - 1, day);
+  }
 
   function formatResultDate(dateValue: Date) {
     return dateValue.toLocaleString("en-GB", {
@@ -86,6 +126,10 @@ function FileUploadSearch() {
 
   function handleSearch() {
     const hasSelectedSources = selectedSources.length > 0;
+    const normalizedTheme = formFields.theme.trim().toLowerCase();
+    const normalizedLocation = formFields.location.trim().toLowerCase();
+    const fromDate = parseDateFilter(formFields.fromDate);
+    const toDate = parseDateFilter(formFields.toDate);
 
     beginSearch();
     setLoading(true);
@@ -98,9 +142,20 @@ function FileUploadSearch() {
         return;
       }
 
-      const filtered = data.filter((item: Result) =>
-        selectedSources.includes(item.sourceLabel),
-      );
+      const filtered = data.filter((item: Result) => {
+        const matchesSource = selectedSources.includes(item.sourceLabel);
+        const matchesTheme =
+          !normalizedTheme ||
+          item.themes.some((theme) => matchesWords(theme, normalizedTheme));
+        const matchesLocation =
+          !normalizedLocation ||
+          matchesWords(item.location, normalizedLocation);
+        const matchesDate =
+          (!fromDate || item.date >= fromDate) &&
+          (!toDate || item.date <= toDate);
+
+        return matchesSource && matchesTheme && matchesLocation && matchesDate;
+      });
 
       setResults(filtered);
       setSearchAttempted(true);
@@ -276,6 +331,60 @@ function FileUploadSearch() {
         <p className="source-search-help">
           Suggested sources: aviva.com, Goodwin pack, sustainability sharepoint
         </p>
+      </div>
+
+      <div className="source-field">
+        <label htmlFor="theme" className="source-search-label">
+          Theme
+        </label>
+        <input
+          type="text"
+          id="theme"
+          name="theme"
+          placeholder="Enter a search term, e.g. 'biodiversity', 'climate'"
+          value={formFields.theme}
+          onChange={handleInputChange}
+        />
+      </div>
+
+      <div className="source-field">
+        <label htmlFor="location" className="source-search-label">
+          Location
+        </label>
+        <input
+          type="text"
+          id="location"
+          name="location"
+          placeholder="Enter a location, e.g. 'London', 'York'"
+          value={formFields.location}
+          onChange={handleInputChange}
+        />
+      </div>
+
+      <div className="source-field">
+        <label htmlFor="fromDate" className="source-search-label">
+          From date
+        </label>
+        <input
+          type="date"
+          id="fromDate"
+          name="fromDate"
+          value={formFields.fromDate}
+          onChange={handleInputChange}
+        />
+      </div>
+
+      <div className="source-field">
+        <label htmlFor="toDate" className="source-search-label">
+          To date
+        </label>
+        <input
+          type="date"
+          id="toDate"
+          name="toDate"
+          value={formFields.toDate}
+          onChange={handleInputChange}
+        />
       </div>
 
       <button onClick={handleSearch} className="search-button">
