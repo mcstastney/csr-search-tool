@@ -87,7 +87,7 @@ export const data = [
     description:
       "Providing seed funding for nature restoration projects run by Nattergal",
     date: new Date(2025, 7, 1),
-    sourceLabel: "Gooodwin pack",
+    sourceLabel: "Goodwin pack",
     source:
       "https://www.avivaworld.com/:p:/r/sites/uk-cs-oc-ukcr/CR%20files/GOODWIN%20-%20Reasons%[…]tx?d=wd55f57be48f54b4ea164a75f3b313dc7&csf=1&web=1&e=T19ZsU",
   },
@@ -99,7 +99,7 @@ export const data = [
     description:
       "Principles for Sustainable Insurance signatory and participant in the Working Group on Nature",
     date: new Date(2026, 2, 1),
-    sourceLabel: "Gooodwin pack",
+    sourceLabel: "Goodwin pack",
     source:
       "https://www.avivaworld.com/:p:/r/sites/uk-cs-oc-ukcr/CR%20files/GOODWIN%20-%20Reasons%[…]1&web=1&e=DuE0AF&nav=eyJzSWQiOjQ3MSwiY0lkIjoyNTkwMzMxMTc2fQ",
   },
