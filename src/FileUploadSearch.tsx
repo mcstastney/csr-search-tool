@@ -64,6 +64,75 @@ function FileUploadSearch() {
   const [questionnaireSubmitted, setQuestionnaireSubmitted] = useState(false);
   const [formFields, setFormFields] = useState<FormFields>(initialFormFields);
 
+  // FILE UPLOAD AND QUESTIONNAIRE HANDLERS
+
+  // handle file upload and store the file in state
+  function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0] || null;
+    setUploadedFile(file);
+  }
+
+  // simulate processing uploaded file (loading wheel) and extracting questions, update state to show questions checklist
+  function handleQuestionnaireSubmit() {
+    if (!uploadedFile) return;
+
+    // Simulate processing the uploaded file and extracting questions
+    setLoading(true);
+    setTimeout(() => {
+      setQuestions(mockQuestions);
+      setQuestionnaireSubmitted(true);
+      setLoading(false);
+    }, 300);
+  }
+
+  // handle toggling individual questions in the checklist
+  function handleQuestionToggle(questionId: string) {
+    setSelectedQuestions((current) =>
+      current.includes(questionId)
+        ? current.filter((id) => id !== questionId)
+        : [...current, questionId],
+    );
+  }
+
+  // handle selecting or deselecting all questions in the checklist
+  function handleSelectAllQuestions() {
+    if (selectedQuestions.length === questions.length) {
+      setSelectedQuestions([]);
+    } else {
+      setSelectedQuestions(questions.map((q) => q.id));
+    }
+  }
+
+  // DATA SOURCE HANDLERS
+  // filter available data sources for the suggestions dropdown and selected sources based on user input and excluding already selected sources
+  const filteredOptions = useMemo(() => {
+    const normalizedQuery = sourceQuery.trim().toLowerCase();
+
+    return dataSourceOptions.filter((option) => {
+      const isAlreadySelected = selectedSources.includes(option);
+      // if no source, query all options. If source, show options that match the query and aren't already selected
+      const matchesQuery =
+        !normalizedQuery || option.toLowerCase().includes(normalizedQuery);
+
+      return !isAlreadySelected && matchesQuery;
+    });
+  }, [selectedSources, sourceQuery]);
+
+  // helper to add selected source to the UI
+  function handleAddSource(sourceOption: string) {
+    setSelectedSources((currentSources) => [...currentSources, sourceOption]);
+    setSourceQuery("");
+  }
+
+  // helper to remove selected source from the UI
+  function handleRemoveSource(sourceOption: string) {
+    setSelectedSources((currentSources) =>
+      currentSources.filter((currentSource) => currentSource !== sourceOption),
+    );
+  }
+
+  // FORM FIELD HANDLERS
+  // dynamic input handler for form fields (theme, location, fromDate, toDate)
   function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = e.target;
     setFormFields((currentFields) => ({
@@ -72,12 +141,14 @@ function FileUploadSearch() {
     }));
   }
 
+  // helper function to check if input value contains all words in a query (case-insensitive)
   function matchesWords(value: string, query: string) {
     const queryWords = query.trim().toLowerCase().split(/\s+/);
     const normalizedValue = value.toLowerCase();
     return queryWords.every((word) => normalizedValue.includes(word));
   }
 
+  // convert date string input into a Number
   function parseDateFilter(dateValue: string) {
     if (!dateValue) {
       return null;
@@ -86,9 +157,11 @@ function FileUploadSearch() {
     if (!year || !month || !day) {
       return null;
     }
+    // Jan is 0 index in JS but input month is 1 index, hence month - 1
     return new Date(year, month - 1, day);
   }
 
+  // convert date into a readable format for UI, e.g. "June 2024"
   function formatResultDate(dateValue: Date) {
     return dateValue.toLocaleString("en-GB", {
       month: "long",
@@ -96,34 +169,14 @@ function FileUploadSearch() {
     });
   }
 
-  const filteredOptions = useMemo(() => {
-    const normalizedQuery = sourceQuery.trim().toLowerCase();
-
-    return dataSourceOptions.filter((option) => {
-      const isAlreadySelected = selectedSources.includes(option);
-      const matchesQuery =
-        !normalizedQuery || option.toLowerCase().includes(normalizedQuery);
-
-      return !isAlreadySelected && matchesQuery;
-    });
-  }, [selectedSources, sourceQuery]);
-
+  // SEARCH HANDLERS
+  // helper to reset results and search state when performing a new search
   function beginSearch() {
     setResults([]);
     setSearchAttempted(false);
   }
 
-  function handleAddSource(sourceOption: string) {
-    setSelectedSources((currentSources) => [...currentSources, sourceOption]);
-    setSourceQuery("");
-  }
-
-  function handleRemoveSource(sourceOption: string) {
-    setSelectedSources((currentSources) =>
-      currentSources.filter((currentSource) => currentSource !== sourceOption),
-    );
-  }
-
+  // main search function - filter data based on selected sources, form fields, and return results that match all criteria
   function handleSearch() {
     const hasSelectedSources = selectedSources.length > 0;
     const normalizedTheme = formFields.theme.trim().toLowerCase();
@@ -162,42 +215,15 @@ function FileUploadSearch() {
     }, 300);
   }
 
-  function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0] || null;
-    setUploadedFile(file);
-  }
-
-  function handleQuestionnaireSubmit() {
-    if (!uploadedFile) return;
-
-    // Simulate processing the uploaded file and extracting questions
-    setLoading(true);
-    setTimeout(() => {
-      setQuestions(mockQuestions);
-      setQuestionnaireSubmitted(true);
-      setLoading(false);
-    }, 300);
-  }
-
-  function handleQuestionToggle(questionId: string) {
-    setSelectedQuestions((current) =>
-      current.includes(questionId)
-        ? current.filter((id) => id !== questionId)
-        : [...current, questionId],
-    );
-  }
-
-  function handleSelectAllQuestions() {
-    if (selectedQuestions.length === questions.length) {
-      setSelectedQuestions([]);
-    } else {
-      setSelectedQuestions(questions.map((q) => q.id));
-    }
-  }
-
-  function generateSummary(): string {
+  // RESULTS SUMMARY HANDLER
+  function generateSummary(): React.ReactNode {
     const selectedCount = selectedQuestions.length;
     const resultCount = results.length;
+    // "numeric" | "2-digit" | "long" | "short" | "narrow"
+    const fromDate = new Date(formFields.fromDate).toLocaleString("en-GB", {
+      month: "long",
+      year: "numeric",
+    });
 
     // Get unique locations
     const uniqueLocations = [...new Set(results.map((r) => r.location))];
@@ -212,8 +238,21 @@ function FileUploadSearch() {
     const keyThemes = results.flatMap((r) => r.themes);
     const uniqueThemes = [...new Set(keyThemes)].slice(0, 4);
     const themesText = uniqueThemes.join(", ");
-
-    return `Aviva has invested in ${resultCount} project${resultCount !== 1 ? "s" : ""} addressing your selected question${selectedCount !== 1 ? "s" : ""} about sustainability and community metrics. These results span ${uniqueLocations.length} location${uniqueLocations.length !== 1 ? "s" : ""}: ${locationText}. Key themes covered include ${themesText}.`;
+    return (
+      <>
+        <p>
+          Aviva has invested in {resultCount} project
+          {resultCount !== 1 ? "s" : ""} since {fromDate} addressing your
+          selected question{selectedCount !== 1 ? "s" : ""} about sustainability
+          and community metrics.
+        </p>
+        <p>
+          These results span {uniqueLocations.length} location
+          {uniqueLocations.length !== 1 ? "s" : ""}: {locationText}. Key themes
+          covered include {themesText}.
+        </p>
+      </>
+    );
   }
 
   // Initial upload state - show file upload and submit button
@@ -329,7 +368,7 @@ function FileUploadSearch() {
           )}
         </div>
         <p className="source-search-help">
-          Suggested sources: aviva.com, Goodwin pack, sustainability sharepoint
+          Available sources: aviva.com, Goodwin pack, sustainability sharepoint
         </p>
       </div>
 
@@ -341,7 +380,7 @@ function FileUploadSearch() {
           type="text"
           id="theme"
           name="theme"
-          placeholder="Enter a search term, e.g. 'biodiversity', 'climate'"
+          placeholder="Enter a search term, e.g. 'biodiversity', 'habitat restoration'"
           value={formFields.theme}
           onChange={handleInputChange}
         />
