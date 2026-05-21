@@ -19,14 +19,12 @@ type Question = {
 };
 
 type FormFields = {
-  theme: string;
   location: string;
   fromDate: string;
   toDate: string;
 };
 
 const initialFormFields: FormFields = {
-  theme: "",
   location: "",
   fromDate: "",
   toDate: "",
@@ -103,6 +101,34 @@ function FileUploadSearch() {
     }
   }
 
+  function getThemesFromSelectedQuestions(selectedQuestionIds: string[]) {
+    // Map question IDs to themes (this is a mock mapping for demonstration)
+    const questionThemeMap: { [key: string]: string[] } = {
+      q1: ["carbon reduction", "climate change"],
+      q2: ["environmental impact", "sustainability metrics"],
+      q3: [
+        "sustainability initiatives",
+        "community engagement",
+        "biodiversity",
+        "habitat restoration",
+      ],
+      q4: ["climate risks", "resilience", "flooding", "drought"],
+      q5: ["ESG metrics", "reporting"],
+      q6: ["community engagement", "social impact"],
+      q7: ["supply chain sustainability", "ethical sourcing"],
+    };
+
+    const selectedThemes = new Set<string>();
+    selectedQuestionIds.forEach((id) => {
+      const themes = questionThemeMap[id];
+      if (themes) {
+        themes.forEach((theme) => selectedThemes.add(theme));
+      }
+    });
+
+    return Array.from(selectedThemes);
+  }
+
   // DATA SOURCE HANDLERS
   // filter available data sources for the suggestions dropdown and selected sources based on user input and excluding already selected sources
   const filteredOptions = useMemo(() => {
@@ -132,7 +158,7 @@ function FileUploadSearch() {
   }
 
   // FORM FIELD HANDLERS
-  // dynamic input handler for form fields (theme, location, fromDate, toDate)
+  // dynamic input handler for form fields (location, fromDate, toDate)
   function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = e.target;
     setFormFields((currentFields) => ({
@@ -179,8 +205,11 @@ function FileUploadSearch() {
   // main search function - filter data based on selected sources, form fields, and return results that match all criteria
   function handleSearch() {
     const hasSelectedSources = selectedSources.length > 0;
-    const normalizedTheme = formFields.theme.trim().toLowerCase();
-    const normalizedLocation = formFields.location.trim().toLowerCase();
+    const selectedThemes = getThemesFromSelectedQuestions(selectedQuestions);
+    const locationQueries = formFields.location
+      .split(",")
+      .map((locationItem) => locationItem.trim().toLowerCase())
+      .filter(Boolean);
     const fromDate = parseDateFilter(formFields.fromDate);
     const toDate = parseDateFilter(formFields.toDate);
 
@@ -197,17 +226,20 @@ function FileUploadSearch() {
 
       const filtered = data.filter((item: Result) => {
         const matchesSource = selectedSources.includes(item.sourceLabel);
-        const matchesTheme =
-          !normalizedTheme ||
-          item.themes.some((theme) => matchesWords(theme, normalizedTheme));
+
         const matchesLocation =
-          !normalizedLocation ||
-          matchesWords(item.location, normalizedLocation);
+          locationQueries.length === 0 ||
+          locationQueries.some((query) => matchesWords(item.location, query));
         const matchesDate =
           (!fromDate || item.date >= fromDate) &&
           (!toDate || item.date <= toDate);
 
-        return matchesSource && matchesTheme && matchesLocation && matchesDate;
+        return (
+          matchesSource &&
+          selectedThemes.length > 0 &&
+          matchesLocation &&
+          matchesDate
+        );
       });
 
       setResults(filtered);
@@ -219,11 +251,12 @@ function FileUploadSearch() {
   function generateSummary(): React.ReactNode {
     const selectedCount = selectedQuestions.length;
     const resultCount = results.length;
-    // "numeric" | "2-digit" | "long" | "short" | "narrow"
-    const fromDate = new Date(formFields.fromDate).toLocaleString("en-GB", {
-      month: "long",
-      year: "numeric",
-    });
+    const fromDate = formFields.fromDate
+      ? new Date(formFields.fromDate).toLocaleString("en-GB", {
+          month: "long",
+          year: "numeric",
+        })
+      : null;
 
     // Get unique locations
     const uniqueLocations = [...new Set(results.map((r) => r.location))];
@@ -242,14 +275,16 @@ function FileUploadSearch() {
       <>
         <p>
           Aviva has invested in {resultCount} project
-          {resultCount !== 1 ? "s" : ""} since {fromDate} addressing your
-          selected question{selectedCount !== 1 ? "s" : ""} about sustainability
-          and community metrics.
+          {resultCount !== 1 ? "s" : ""} {fromDate && "since"} {fromDate} that
+          address your selected question{selectedCount !== 1 ? "s" : ""} from
+          this tender.
         </p>
         <p>
-          These results span {uniqueLocations.length} location
-          {uniqueLocations.length !== 1 ? "s" : ""}: {locationText}. Key themes
-          covered include {themesText}.
+          The project{resultCount !== 1 ? "s" : ""} span{" "}
+          {uniqueLocations.length} location
+          {uniqueLocations.length !== 1 ? "s" : ""}: {locationText}. These
+          results provide insights into Aviva's investments and initiatives
+          related to the themes of {themesText}.
         </p>
       </>
     );
@@ -370,20 +405,6 @@ function FileUploadSearch() {
         <p className="source-search-help">
           Available sources: aviva.com, Goodwin pack, sustainability sharepoint
         </p>
-      </div>
-
-      <div className="source-field">
-        <label htmlFor="theme" className="source-search-label">
-          Theme
-        </label>
-        <input
-          type="text"
-          id="theme"
-          name="theme"
-          placeholder="Enter a search term, e.g. 'biodiversity', 'habitat restoration'"
-          value={formFields.theme}
-          onChange={handleInputChange}
-        />
       </div>
 
       <div className="source-field">
