@@ -97,12 +97,14 @@ function Search({ onUploadSearchClick }: SearchProps) {
   }
 
   // RESULTS SUMMARY HANDLER
-  function generateSummary(): string {
+  function generateSummary(): React.ReactNode {
     const resultCount = results.length;
-    const fromDate = new Date(formFields.fromDate).toLocaleString("en-GB", {
-      month: "long",
-      year: "numeric",
-    });
+    const fromDate = formFields.fromDate
+      ? new Date(formFields.fromDate).toLocaleString("en-GB", {
+          month: "long",
+          year: "numeric",
+        })
+      : null;
 
     // Get unique locations
     const uniqueLocations = [...new Set(results.map((r) => r.location))];
@@ -118,7 +120,20 @@ function Search({ onUploadSearchClick }: SearchProps) {
     const uniqueThemes = [...new Set(keyThemes)].slice(0, 4);
     const themesText = uniqueThemes.join(", ");
 
-    return `Aviva has invested in ${resultCount} project${resultCount !== 1 ? "s" : ""} since ${fromDate} with a focus on ${themesText}. These results span ${uniqueLocations.length} location${uniqueLocations.length !== 1 ? "s" : ""}: ${locationText}.`;
+    return (
+      <>
+        <p>
+          Aviva has invested in {resultCount} project
+          {resultCount !== 1 ? "s" : ""} {fromDate && "since"} {fromDate} based
+          in {uniqueLocations.length} location
+          {uniqueLocations.length !== 1 ? "s" : ""}: {locationText}.
+        </p>
+        <p>
+          These results provide insights into Aviva's investments and
+          initiatives related to the themes of {themesText}.
+        </p>
+      </>
+    );
   }
 
   function beginSearch() {
