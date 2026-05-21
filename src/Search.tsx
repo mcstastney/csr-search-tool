@@ -68,10 +68,11 @@ function Search({ onUploadSearchClick }: SearchProps) {
   }
 
   function formatResultDate(dateValue: Date) {
-    return dateValue.toLocaleString("en-GB", {
+    const stringDate = dateValue.toLocaleString("en-GB", {
       month: "long",
       year: "numeric",
     });
+    return stringDate;
   }
 
   function getResults(options?: { filters?: FormFields }) {
@@ -93,6 +94,31 @@ function Search({ onUploadSearchClick }: SearchProps) {
 
       return matchesTheme && matchesLocation && matchesDate;
     });
+  }
+
+  // RESULTS SUMMARY HANDLER
+  function generateSummary(): string {
+    const resultCount = results.length;
+    const fromDate = new Date(formFields.fromDate).toLocaleString("en-GB", {
+      month: "long",
+      year: "numeric",
+    });
+
+    // Get unique locations
+    const uniqueLocations = [...new Set(results.map((r) => r.location))];
+    const locationText =
+      uniqueLocations.length === 1
+        ? uniqueLocations[0]
+        : uniqueLocations.length === 2
+          ? uniqueLocations.join(" and ")
+          : `${uniqueLocations.slice(0, -1).join(", ")}, and ${uniqueLocations[uniqueLocations.length - 1]}`;
+
+    // Create a brief overview of what the results cover
+    const keyThemes = results.flatMap((r) => r.themes);
+    const uniqueThemes = [...new Set(keyThemes)].slice(0, 4);
+    const themesText = uniqueThemes.join(", ");
+
+    return `Aviva has invested in ${resultCount} project${resultCount !== 1 ? "s" : ""} since ${fromDate} with a focus on ${themesText}. These results span ${uniqueLocations.length} location${uniqueLocations.length !== 1 ? "s" : ""}: ${locationText}.`;
   }
 
   function beginSearch() {
@@ -148,7 +174,7 @@ function Search({ onUploadSearchClick }: SearchProps) {
           type="text"
           id="theme"
           name="theme"
-          placeholder="Enter a search term, e.g. 'norwich', 'biodiversity'"
+          placeholder="Enter a search term, e.g. 'nature', 'biodiversity'"
           value={formFields.theme}
           onChange={handleInputChange}
         ></input>
@@ -192,6 +218,10 @@ function Search({ onUploadSearchClick }: SearchProps) {
 
         {searchAttempted && results.length === 0 && (
           <p>No results found. Please try a different search term.</p>
+        )}
+
+        {searchAttempted && results.length > 0 && (
+          <p className="results-summary">{generateSummary()}</p>
         )}
 
         {results.map((item) => (
