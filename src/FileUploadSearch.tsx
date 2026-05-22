@@ -1,6 +1,11 @@
 import "./App.css";
 import React, { useMemo, useState } from "react";
 import { data, dataSourceOptions } from "./data";
+import {
+  addSelectedSource,
+  getFilteredDataSourceOptions,
+  removeSelectedSource,
+} from "./utils/dataSourceHandler";
 
 type Result = {
   id: string;
@@ -52,6 +57,7 @@ const mockQuestions: Question[] = [
 
 function FileUploadSearch() {
   const [sourceQuery, setSourceQuery] = useState("");
+  const [isSourceInfoOpen, setIsSourceInfoOpen] = useState(false);
   const [selectedSources, setSelectedSources] = useState<string[]>([]);
   const [results, setResults] = useState<Result[]>([]);
   const [searchAttempted, setSearchAttempted] = useState(false);
@@ -80,7 +86,7 @@ function FileUploadSearch() {
       setQuestions(mockQuestions);
       setQuestionnaireSubmitted(true);
       setLoading(false);
-    }, 300);
+    }, 400);
   }
 
   // handle toggling individual questions in the checklist
@@ -132,28 +138,25 @@ function FileUploadSearch() {
   // DATA SOURCE HANDLERS
   // filter available data sources for the suggestions dropdown and selected sources based on user input and excluding already selected sources
   const filteredOptions = useMemo(() => {
-    const normalizedQuery = sourceQuery.trim().toLowerCase();
-
-    return dataSourceOptions.filter((option) => {
-      const isAlreadySelected = selectedSources.includes(option);
-      // if no source, query all options. If source, show options that match the query and aren't already selected
-      const matchesQuery =
-        !normalizedQuery || option.toLowerCase().includes(normalizedQuery);
-
-      return !isAlreadySelected && matchesQuery;
+    return getFilteredDataSourceOptions({
+      dataSourceOptions,
+      selectedSources,
+      sourceQuery,
     });
   }, [selectedSources, sourceQuery]);
 
   // helper to add selected source to the UI
   function handleAddSource(sourceOption: string) {
-    setSelectedSources((currentSources) => [...currentSources, sourceOption]);
+    setSelectedSources((currentSources) =>
+      addSelectedSource(currentSources, sourceOption),
+    );
     setSourceQuery("");
   }
 
   // helper to remove selected source from the UI
   function handleRemoveSource(sourceOption: string) {
     setSelectedSources((currentSources) =>
-      currentSources.filter((currentSource) => currentSource !== sourceOption),
+      removeSelectedSource(currentSources, sourceOption),
     );
   }
 
@@ -244,7 +247,7 @@ function FileUploadSearch() {
 
       setResults(filtered);
       setSearchAttempted(true);
-    }, 300);
+    }, 500);
   }
 
   // RESULTS SUMMARY HANDLER
@@ -267,7 +270,7 @@ function FileUploadSearch() {
           ? uniqueLocations.join(" and ")
           : `${uniqueLocations.slice(0, -1).join(", ")}, and ${uniqueLocations[uniqueLocations.length - 1]}`;
 
-    // Create a brief overview of what the results cover
+    // Create overview of what the results cover
     const keyThemes = results.flatMap((r) => r.themes);
     const uniqueThemes = [...new Set(keyThemes)].slice(0, 4);
     const themesText = uniqueThemes.join(", ");
@@ -283,8 +286,8 @@ function FileUploadSearch() {
           The project{resultCount !== 1 ? "s" : ""} span{" "}
           {uniqueLocations.length} location
           {uniqueLocations.length !== 1 ? "s" : ""}: {locationText}. These
-          results provide insights into Aviva's investments and initiatives
-          related to the themes of {themesText}.
+          results provide insights into Aviva's investments and initiatives on
+          the themes of {themesText}.
         </p>
       </>
     );
@@ -355,9 +358,21 @@ function FileUploadSearch() {
       </div>
 
       <div className="source-field">
-        <label htmlFor="source-search" className="source-search-label">
-          Data sources to include in search:
-        </label>
+        <div className="label-with-info">
+          <label htmlFor="source-search" className="source-search-label">
+            Data sources to include in search:
+          </label>
+          <button
+            type="button"
+            className="info-icon-button"
+            aria-label="Open data source information"
+            aria-haspopup="dialog"
+            aria-expanded={isSourceInfoOpen}
+            onClick={() => setIsSourceInfoOpen(true)}
+          >
+            i
+          </button>
+        </div>
         <div className="source-search-box">
           <div className="source-chip-list">
             {selectedSources.map((sourceOption) => (
@@ -402,9 +417,33 @@ function FileUploadSearch() {
             </div>
           )}
         </div>
-        <p className="source-search-help">
-          Available sources: aviva.com, Goodwin pack, sustainability sharepoint
-        </p>
+        {isSourceInfoOpen && (
+          <div
+            className="info-modal-overlay"
+            role="presentation"
+            onClick={() => setIsSourceInfoOpen(false)}
+          >
+            <div
+              className="info-modal"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Data source information"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <p>
+                Available sources: aviva.com, Goodwin pack, sustainability
+                sharepoint.
+              </p>
+              <button
+                type="button"
+                className="info-modal-close"
+                onClick={() => setIsSourceInfoOpen(false)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="source-field">
