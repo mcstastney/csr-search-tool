@@ -24,7 +24,7 @@ export const data = [
     themes: ["reforestation", "biodiversity", "habitat"],
     description:
       "Local project to restore habitat and biodiversity in the Scottish Highlands.",
-    date: new Date(2023, 1, 1),
+    date: new Date(2024, 1, 1),
     sourceLabel: "aviva.com",
     source:
       "https://www.aviva.com/newsroom/news-releases/2023/02/aviva-helps-restore-rare-native-british-rainforests/",
